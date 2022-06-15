@@ -1,6 +1,13 @@
 <template>
   <div>
-    <el-form :rules="rules" ref="loginForm" :model="loginForm" class="loginStyle">
+    <el-form :rules="rules"
+             v-loading="loading"
+             element-loading-text="登录中...."
+             element-loading-spinner="el-icon-loading"
+             element-loading-background="rgba(0, 0, 0, 0.8)"
+             ref="loginForm"
+             :model="loginForm"
+             class="loginStyle">
       <h3 class="loginTitle">系统登录</h3>
 
       <el-form-item prop="username">
@@ -24,13 +31,17 @@
 
       <el-button type="primary" style="width: 100%" @click="submitLogin">点击登录</el-button>
     </el-form>
+    <!--  底部  -->
+    <div class="el-login-footer">
+      <span>Copyright © 2022-2999 交通银行太平洋信用卡中心 All Rights Reserved.</span>
+    </div>
 
   </div>
 </template>
 
 <script>
-import {postRequest} from "@/utils/api";
-import router from "@/router";
+// import {postRequest} from "@/utils/api";
+
 
 export default {
   name: "login",
@@ -39,9 +50,10 @@ export default {
       captchaUrl: '/captcha?time='+new Date(),
       loginForm: {
         username: 'admin',
-        password: '1234',
-        captcha:'111'
+        password: '123',
+        captcha:''
       },
+      loading: false,
       checked: true,
       rules: {
         username: [{required: true, message: '请输入用户名', trigger:
@@ -60,12 +72,17 @@ export default {
     },
     submitLogin(){
       this.$refs.loginForm.validate((valid) => {
+        this.loading=true;
         if (valid) {
-          postRequest('/login',this.loginForm).then(resp=>{
-            alert(JSON.stringify(resp));
-            // const tokenStr = resp.obj.tokenHead + resp.obj.token;
-            // window.sessionStorage.setItem("tokenStr", tokenStr);
-            router.push('/Home');
+          this.loading = false;
+          this.postRequest('/login',this.loginForm).then(resp =>{
+           if(resp){
+             //存储token
+             const tokenStr = resp.obj.tokenHead+resp.obj.token;
+             window.sessionStorage.setItem("tokenStr", tokenStr);
+             this.$router.replace('/Home');
+           }
+
           })
 
         } else {
